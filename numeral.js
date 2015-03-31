@@ -493,16 +493,6 @@
 
     function Numeral(input, language_key, values) {
 
-        if (Numeral.isNumeral(input)) {
-            input = input.value();
-        } else if (input === 0 || typeof input === 'undefined') {
-            input = 0;
-        } else if (!Number(input)) {
-            input = Numeral.fn.unformat(input);
-        }
-
-        this._value = input;
-
         if(input.currentLanguage){
             language_key = input.currentLanguage;
         }
@@ -545,6 +535,16 @@
                 }
             });
         }
+
+        if (Numeral.isNumeral(input)) {
+            input = input.value();
+        } else if (input === 0 || typeof input === 'undefined') {
+            input = 0;
+        } else if (!Number(input)) {
+            input = this.unformat(input);
+        }
+
+        this._value = input;
     }
 
     // version number
