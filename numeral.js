@@ -12,8 +12,7 @@
         Constants
     ************************************/
 
-    var numeral,
-        VERSION = '1.5.3',
+        var VERSION = '1.5.4',
         // internal storage for language config files
         languages = {},
         currentLanguage = 'en',
@@ -27,13 +26,6 @@
     /************************************
         Constructors
     ************************************/
-
-
-    // Numeral prototype object
-    function Numeral(number, language_key) {
-        this._value = number;
-        this.currentLanguage = language_key || currentLanguage;
-    }
 
     /**
      * Implementation of toFixed() that treats floats more like decimals
@@ -499,14 +491,20 @@
         Top Level Functions
     ************************************/
 
-    numeral.prototype = function(input, language_key, values) {
+    function Numeral(input, language_key, values) {
 
-        if (numeral.isNumeral(input)) {
+        if (Numeral.isNumeral(input)) {
             input = input.value();
         } else if (input === 0 || typeof input === 'undefined') {
             input = 0;
         } else if (!Number(input)) {
-            input = numeral.fn.unformat(input);
+            input = Numeral.fn.unformat(input);
+        }
+
+        this._value = input;
+
+        if(input.currentLanguage){
+            language_key = input.currentLanguage;
         }
 
         if(language_key){
@@ -547,23 +545,21 @@
                 }
             });
         }
-
-        return new Numeral(Number(input), language_key);
-    };
+    }
 
     // version number
-    numeral.prototype.version = VERSION;
-    numeral.prototype.currentLanguage = currentLanguage;
+    Numeral.version = Numeral.prototype.version = VERSION;
+    Numeral.prototype.currentLanguage = currentLanguage;
 
     // compare numeral object
-    numeral.prototype.isNumeral = function(obj) {
+    Numeral.isNumeral = Numeral.prototype.isNumeral = function(obj) {
         return obj instanceof Numeral;
     };
 
     // This function will load languages and then set the global language.  If
     // no arguments are passed in, it will simply return the current global
     // language key.
-    numeral.prototype.language = function(key, values) {
+    Numeral.prototype.language = function(key, values) {
         if (!key) {
             return this.currentLanguage;
         }
@@ -592,7 +588,7 @@
 	// This function allow the user to set a new language with a fallback if
 	// the language does not exist. If no fallback language is provided,
 	// it fallbacks to english.
-	numeral.prototype.setLanguage = function(newLanguage, fallbackLanguage) {
+	Numeral.prototype.setLanguage = function(newLanguage, fallbackLanguage) {
 		var key = newLanguage,
 			prefix = newLanguage.split('-')[0],
 			matchingLanguage = null;
@@ -610,7 +606,7 @@
     // This function provides access to the loaded language data.  If
     // no arguments are passed in, it will simply return the current
     // global language object.
-    numeral.prototype.languageData = function(key) {
+    Numeral.prototype.languageData = function(key) {
         if (!key) {
             return languages[this.currentLanguage];
         }
@@ -622,19 +618,19 @@
         return languages[key];
     };
 
-    numeral.prototype.zeroFormat = function(format) {
+    Numeral.prototype.zeroFormat = function(format) {
         zeroFormat = typeof(format) === 'string' ? format : null;
     };
 
-    numeral.prototype.defaultFormat = function(format) {
+    Numeral.prototype.defaultFormat = function(format) {
         defaultFormat = typeof(format) === 'string' ? format : '0.0';
     };
 
-    numeral.prototype.defaultCurrencyFormat = function (format) {
+    Numeral.prototype.defaultCurrencyFormat = function (format) {
         defaultCurrencyFormat = typeof(format) === 'string' ? format : '0$';
     };
 
-    numeral.prototype.validate = function(val, culture) {
+    Numeral.prototype.validate = function(val, culture) {
 
         var _decimalSep,
             _thousandSep,
@@ -821,10 +817,10 @@
     ************************************/
 
 
-    numeral.fn = Numeral.prototype = {
+    var NumeralFn = {
 
         clone: function() {
-            return new numeral(this);
+            return new Numeral(this);
         },
 
         format: function(inputString, roundingFunction) {
@@ -832,7 +828,7 @@
                 inputString ? inputString : defaultFormat,
                 (roundingFunction !== undefined) ? roundingFunction : Math.round,
                 null,
-                this.language()
+                this.currentLanguage
             );
         },
 
@@ -840,7 +836,7 @@
             return formatCurrency(this,
                 inputString ? inputString : defaultCurrencyFormat,
                 (roundingFunction !== undefined) ? roundingFunction : Math.round,
-                this.language()
+                this.currentLanguage
             );
         },
 
@@ -848,7 +844,7 @@
             if (Object.prototype.toString.call(inputString) === '[object Number]') {
                 return inputString;
             }
-            return unformatNumeral(this, inputString ? inputString : defaultFormat, this.language());
+            return unformatNumeral(this, inputString ? inputString : defaultFormat, this.currentLanguage);
         },
 
         value: function() {
@@ -904,19 +900,26 @@
         },
 
         difference: function(value) {
-            return Math.abs(new numeral(this._value,this.language()).subtract(value).value());
+            return Math.abs(new Numeral(this._value, this.currentLanguage).subtract(value).value());
         }
 
     };
+
+    for (var fn in NumeralFn) {
+      if(NumeralFn.hasOwnProperty(fn)) {
+        Numeral.prototype[fn] = NumeralFn[fn];
+      }
+    }
+
 
     /************************************
         Exposing Numeral
     ************************************/
 
     function generator(language_key, values){
-        var out = new numeral(null, language_key, values);
+        var out = new Numeral(null, language_key, values);
         return out;
-    };
+    }
 
     // CommonJS module is defined
     if (hasModule) {

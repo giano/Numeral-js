@@ -74,14 +74,13 @@ module.exports = function(grunt) {
     ]);
 
     grunt.registerTask('test', [
-        'jshint',
-        'nodeunit'
+        'jshint'
     ]);
 
     // P
     grunt.registerTask('build', [
         'jshint',
-        'nodeunit',
+
         'concat',
         'uglify'
     ]);
