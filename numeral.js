@@ -508,10 +508,10 @@
 
 
 
-        if(typeof input !== 'undefined' && typeof input !== 'null'){
+        if(typeof input !== 'undefined' && input !== null){
             if (Numeral.isNumeral(input)) {
                 input = input.value();
-            } else if (input === 0 || typeof input === 'undefined' || typeof input === 'null') {
+            } else if (input === 0 || typeof input === 'undefined' || input === null) {
                 input = 0;
             } else if (!Number(input)) {
                 input = this.unformat(input);
@@ -520,7 +520,7 @@
         }else{
             return function(input){
                 return new Numeral(input, language_key);
-            }
+            };
         }
 
     }
@@ -541,8 +541,8 @@
         if (!key) {
             return this.currentLanguage;
         }
-        if(key == "en"){
-            key = "en-US";
+        if(key === 'en'){
+            key = 'en-US';
         }
         if (key && !values) {
             if (!languages[key]) {
@@ -569,8 +569,8 @@
 	// the language does not exist. If no fallback language is provided,
 	// it fallbacks to english.
 	Numeral.prototype.setLanguage = function(newLanguage, fallbackLanguage) {
-        if(newLanguage == "en"){
-            newLanguage = "en-US";
+        if(newLanguage === 'en'){
+            newLanguage = 'en-US';
         }
 		var key = newLanguage,
 			prefix = newLanguage.split('-')[0],
@@ -595,8 +595,8 @@
             return languages[this.currentLanguage];
         }
 
-        if(key == "en"){
-            key = "en-US";
+        if(key === 'en'){
+            key = 'en-US';
         }
 
         if (!languages[key]) {
@@ -899,7 +899,7 @@
       }
     }
 
-    loadLanguage("en-US",{
+    loadLanguage('en-US',{
         delimiters: {
             thousands: ',',
             decimal: '.'
