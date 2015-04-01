@@ -15,7 +15,7 @@
         var VERSION = '1.5.4',
         // internal storage for language config files
         languages = {},
-        currentLanguage = 'en',
+        currentLanguage = 'en-US',
         zeroFormat = null,
         defaultFormat = '0,0',
         defaultCurrencyFormat = '0$',
@@ -493,7 +493,7 @@
 
     function Numeral(input, language_key, values) {
 
-        if(input.currentLanguage){
+        if(input && input.currentLanguage){
             language_key = input.currentLanguage;
         }
 
@@ -503,48 +503,26 @@
             }
             this.language(language_key);
         }else{
-            this.language('en-US', {
-                delimiters: {
-                    thousands: ',',
-                    decimal: '.'
-                },
-                abbreviations: {
-                    thousand: 'k',
-                    million: 'm',
-                    billion: 'b',
-                    trillion: 't'
-                },
-                ordinal: function(number) {
-                    var b = number % 10;
-                    return (~~(number % 100 / 10) === 1) ? 'th' :
-                        (b === 1) ? 'st' :
-                        (b === 2) ? 'nd' :
-                        (b === 3) ? 'rd' : 'th';
-                },
-                currency: {
-                    symbol: '$',
-                    position: 'prefix'
-                },
-                defaults: {
-                    currencyFormat: ',0000 a'
-                },
-                formats: {
-                    fourDigits: '0000 a',
-                    fullWithTwoDecimals: '$ ,0.00',
-                    fullWithTwoDecimalsNoCurrency: ',0.00'
-                }
-            });
+            this.language('en-US');
         }
 
-        if (Numeral.isNumeral(input)) {
-            input = input.value();
-        } else if (input === 0 || typeof input === 'undefined') {
-            input = 0;
-        } else if (!Number(input)) {
-            input = this.unformat(input);
+
+
+        if(typeof input !== 'undefined' && typeof input !== 'null'){
+            if (Numeral.isNumeral(input)) {
+                input = input.value();
+            } else if (input === 0 || typeof input === 'undefined' || typeof input === 'null') {
+                input = 0;
+            } else if (!Number(input)) {
+                input = this.unformat(input);
+            }
+            this._value = input;
+        }else{
+            return function(input){
+                return new Numeral(input, language_key);
+            }
         }
 
-        this._value = input;
     }
 
     // version number
@@ -563,7 +541,9 @@
         if (!key) {
             return this.currentLanguage;
         }
-
+        if(key == "en"){
+            key = "en-US";
+        }
         if (key && !values) {
             if (!languages[key]) {
                 throw new Error('Unknown language : ' + key);
@@ -589,9 +569,13 @@
 	// the language does not exist. If no fallback language is provided,
 	// it fallbacks to english.
 	Numeral.prototype.setLanguage = function(newLanguage, fallbackLanguage) {
+        if(newLanguage == "en"){
+            newLanguage = "en-US";
+        }
 		var key = newLanguage,
 			prefix = newLanguage.split('-')[0],
 			matchingLanguage = null;
+
 		if (!languages[key]) {
 			Object.keys(languages).forEach(function(language) {
 				if (!matchingLanguage && language.split('-')[0] === prefix){
@@ -609,6 +593,10 @@
     Numeral.prototype.languageData = function(key) {
         if (!key) {
             return languages[this.currentLanguage];
+        }
+
+        if(key == "en"){
+            key = "en-US";
         }
 
         if (!languages[key]) {
@@ -911,13 +899,44 @@
       }
     }
 
+    loadLanguage("en-US",{
+        delimiters: {
+            thousands: ',',
+            decimal: '.'
+        },
+        abbreviations: {
+            thousand: 'k',
+            million: 'm',
+            billion: 'b',
+            trillion: 't'
+        },
+        ordinal: function(number) {
+            var b = number % 10;
+            return (~~(number % 100 / 10) === 1) ? 'th' :
+                (b === 1) ? 'st' :
+                (b === 2) ? 'nd' :
+                (b === 3) ? 'rd' : 'th';
+        },
+        currency: {
+            symbol: '$',
+            position: 'prefix'
+        },
+        defaults: {
+            currencyFormat: ',0000 a'
+        },
+        formats: {
+            fourDigits: '0000 a',
+            fullWithTwoDecimals: '$ ,0.00',
+            fullWithTwoDecimalsNoCurrency: ',0.00'
+        }
+    });
 
     /************************************
         Exposing Numeral
     ************************************/
 
     function generator(language_key, values){
-        var out = new Numeral(null, language_key, values);
+        var out = new Numeral(undefined, language_key, values);
         return out;
     }
 
